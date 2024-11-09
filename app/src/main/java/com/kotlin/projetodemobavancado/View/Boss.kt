@@ -10,14 +10,15 @@ import android.media.SoundPool
 import android.media.AudioAttributes
 import java.io.FileNotFoundException
 
-enum class Direction {
+enum class DirectionBoss {
     LEFT,
     RIGHT,
     UP,
     DOWN
 }
 
-class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
+class Boss(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
+
     var stunned: Boolean = false
     var vital: Float = 2000f
     var streght: Int = 50
@@ -26,17 +27,17 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
     private var jumpSoundId: Int = 0;
     private var attackSoundId: Int = 0;
     private var specialSoundId: Int = 0;
-    private var heroBitmap: Bitmap = BitmapFactory.decodeStream(context.assets.open("hero1.png"));
+    private var heroBitmap: Bitmap = BitmapFactory.decodeStream(context.assets.open("boss1.png"));
     private var scaledHeroBitmap: Bitmap = Bitmap.createScaledBitmap(heroBitmap, 100*5, 150*5, false);
-    private var heroBitmapAtack: Bitmap = BitmapFactory.decodeStream(context.assets.open("atk1.png"));
-    private var heroBitmapStun: Bitmap = BitmapFactory.decodeStream(context.assets.open("stun-reng.png"));
+    private var heroBitmapAtack: Bitmap = BitmapFactory.decodeStream(context.assets.open("batk1.png"));
+    private var heroBitmapStun: Bitmap = BitmapFactory.decodeStream(context.assets.open("stun-boss.png"));
     private var scaledHeroBitmapAtack: Bitmap = Bitmap.createScaledBitmap(heroBitmapAtack, 100*5, 150*5, false);
     private var scaledHeroBitmapStun: Bitmap = Bitmap.createScaledBitmap(heroBitmapStun, 100*5, 150*5, false);
     private var currentJumpFrame: Int = 0;
-    private var currentSpecialFrame: Int = 0;
     private var currentWalkFrame: Int = 0;
+    private var currentSpecialFrame: Int = 0;
     var isJumping: Boolean = false
-    private var isWalking: Boolean = false;
+    var isWalking: Boolean = false;
     private var isAtacking: Boolean = false;
     private var isSpecial: Boolean = false;
     private var jumpHeight: Float = (scaledHeroBitmap.height.toFloat() / 3);
@@ -47,32 +48,23 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
     private val frameDelay: Long = 170;
     private val specialDelay: Long = 100;
     private var jumpBitmaps: List<Bitmap> = listOf(
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("jump2.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("jump2.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("jump3.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("jump3.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("jump1.png")), 100 * 5, 150 * 5, false)
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bjump2.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bjump2.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bjump3.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bjump3.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bjump1.png")), 100 * 5, 150 * 5, false)
     );
     private var walkBitmaps: List<Bitmap> = listOf(
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("walk1.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("walk2.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("walk3.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("walk4.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bwalk1.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bwalk.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bwalk3.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bwalk4.png")), 100 * 5, 150 * 5, false),
     );
     private var specialBitmaps: List<Bitmap> = listOf(
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp-1.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp-1.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp2.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp3.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp4.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
-        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("sp5.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bsp1.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bsp1.png")), 100 * 5, 150 * 5, false),
+        Bitmap.createScaledBitmap(BitmapFactory.decodeStream(context.assets.open("bsp2.png")), 100 * 5, 150 * 5, false),
+
     );
 
     init {
@@ -88,7 +80,7 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
 
         jumpSoundId = loadSoundFromAssets(context, "jump.mp3")
         attackSoundId = loadSoundFromAssets(context, "punch.mp3")
-        specialSoundId = loadSoundFromAssets(context, "fire-sound.mp3")
+        specialSoundId = loadSoundFromAssets(context, "tree-sound.mp3")
     }
 
     private fun loadSoundFromAssets(context: Context, fileName: String): Int {
@@ -102,7 +94,6 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
             0
         }
     }
-
 
     private fun playSound(soundId: Int) {
         soundPool.play(soundId, 1f, 1f, 1, 0, 1f)  // play(soundId, leftVolume, rightVolume, priority, loop, rate)
@@ -121,20 +112,29 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
         }
     }
 
-    fun move(direction: Direction) {
+    fun move(direction: DirectionBoss) {
         when (direction) {
-            Direction.LEFT -> {
+            DirectionBoss.LEFT -> {
                 x -= HeroSpeed
                 isWalking = true
             }
-            Direction.RIGHT -> {
+            DirectionBoss.RIGHT -> {
                 x += HeroSpeed
                 isWalking = true
             }
-            Direction.UP -> y = y
-            Direction.DOWN -> y = y
+            DirectionBoss.UP -> {
+                y = y
+            }
+            DirectionBoss.DOWN -> {
+                y = y
+            }
+        }
+
+        if (direction != DirectionBoss.LEFT && direction != DirectionBoss.RIGHT) {
+            isWalking = false
         }
     }
+
 
     fun stopWalking() {
         isWalking = false
@@ -144,12 +144,14 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
     fun attack() {
         if (!isAtacking) {
             isAtacking = true
+
             playSound(attackSoundId)
             Handler(Looper.getMainLooper()).postDelayed({
                 isAtacking = false
             }, 150)
         }
     }
+
     fun attack2() {
         if (!isSpecial) {
             isSpecial = true
@@ -161,8 +163,6 @@ class Hero(context: Context, var x: Float, var y: Float, var HeroSpeed: Float) {
             }, 900)
         }
     }
-
-
 
     fun draw(canvas: Canvas, isFacingLeft: Boolean) {
         canvas.save()
